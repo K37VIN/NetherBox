@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NetherBox — AutoML Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #050507;
+  --bg2: #0a0a0f;
+  --bg3: #0f0f18;
+  --card: #0d0d14;
+  --border: rgba(0,255,170,0.12);
+  --border2: rgba(0,255,170,0.25);
+  --neon: #00ffaa;
+  --neon2: #00d4ff;
+  --neon3: #7b5ea7;
+  --neonsoft: rgba(0,255,170,0.07);
+  --text: #e8e8f0;
+  --muted: #6b6b80;
+  --danger: #ff4466;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-display);overflow-x:hidden;cursor:none}
+
+/* custom cursor */
+.cursor{position:fixed;width:8px;height:8px;background:var(--neon);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s;mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(0,255,170,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.15s,width 0.3s,height 0.3s,border-color 0.3s;mix-blend-mode:screen}
+
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,170,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+
+/* scan line */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:1;animation:scanMove 8s linear infinite}
+@keyframes scanMove{from{background-position:0 0}to{background-position:0 100px}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 60px;background:linear-gradient(to bottom,rgba(5,5,7,0.95),transparent);backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--neon);text-shadow:0 0 20px rgba(0,255,170,0.6)}
+.logo span{color:var(--text);opacity:0.7}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-family:var(--font-mono);letter-spacing:0.05em;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--neon)}
+.nav-cta{background:transparent;border:1px solid var(--border2);color:var(--neon);font-family:var(--font-mono);font-size:12px;padding:9px 22px;border-radius:3px;cursor:none;transition:all 0.25s;letter-spacing:0.08em;text-decoration:none}
+.nav-cta:hover{background:var(--neonsoft);box-shadow:0 0 20px rgba(0,255,170,0.15)}
+
+/* hero */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 40px;z-index:2}
+.hero-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;color:var(--neon);text-transform:uppercase;margin-bottom:28px;opacity:0;animation:fadeUp 0.6s 0.2s forwards}
+.hero-title{font-size:clamp(52px,8vw,96px);font-weight:800;line-height:0.95;letter-spacing:-3px;margin-bottom:28px;opacity:0;animation:fadeUp 0.6s 0.4s forwards}
+.hero-title .line2{color:var(--neon);text-shadow:0 0 60px rgba(0,255,170,0.4),0 0 120px rgba(0,255,170,0.15)}
+.hero-desc{max-width:560px;font-size:16px;line-height:1.75;color:var(--muted);font-family:var(--font-mono);font-weight:300;margin-bottom:48px;opacity:0;animation:fadeUp 0.6s 0.6s forwards}
+.hero-actions{display:flex;gap:16px;opacity:0;animation:fadeUp 0.6s 0.8s forwards}
+.btn-primary{background:var(--neon);color:#000;font-family:var(--font-mono);font-weight:500;font-size:13px;padding:14px 36px;border:none;border-radius:3px;cursor:none;letter-spacing:0.08em;text-decoration:none;transition:all 0.25s;box-shadow:0 0 30px rgba(0,255,170,0.3)}
+.btn-primary:hover{box-shadow:0 0 50px rgba(0,255,170,0.5);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:14px 36px;border:1px solid rgba(255,255,255,0.12);border-radius:3px;cursor:none;letter-spacing:0.08em;text-decoration:none;transition:all 0.25s}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03)}
+
+/* floating orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orbFloat 8s ease-in-out infinite}
+.orb1{width:400px;height:400px;background:rgba(0,255,170,0.06);top:10%;left:-10%;animation-delay:0s}
+.orb2{width:500px;height:500px;background:rgba(0,212,255,0.05);top:30%;right:-15%;animation-delay:2s}
+.orb3{width:300px;height:300px;background:rgba(123,94,167,0.08);bottom:10%;left:20%;animation-delay:4s}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+
+/* stats ticker */
+.stats-bar{position:relative;z-index:2;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:24px 60px;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;margin-top:0}
+.stat{text-align:center}
+.stat-val{font-size:36px;font-weight:800;color:var(--neon);letter-spacing:-1px;font-family:var(--font-mono)}
+.stat-label{font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:0.1em;margin-top:4px}
+
+/* features section */
+.section{position:relative;z-index:2;padding:100px 60px}
+.section-tag{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;color:var(--neon);text-transform:uppercase;margin-bottom:16px}
+.section-title{font-size:48px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:60px}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.feat-card{background:var(--card);padding:40px 36px;position:relative;overflow:hidden;transition:background 0.3s}
+.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--neonsoft),transparent);opacity:0;transition:opacity 0.3s}
+.feat-card:hover{background:var(--bg3)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{width:44px;height:44px;border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:20px}
+.feat-title{font-size:18px;font-weight:700;margin-bottom:12px;letter-spacing:-0.5px}
+.feat-desc{font-size:13px;color:var(--muted);font-family:var(--font-mono);font-weight:300;line-height:1.8}
+
+/* pipeline viz */
+.pipeline-section{padding:100px 60px;position:relative;z-index:2}
+.pipeline{display:flex;align-items:center;gap:0;margin-top:60px;overflow-x:auto;padding-bottom:20px}
+.pipe-step{flex:1;min-width:120px;text-align:center;position:relative}
+.pipe-step::after{content:'';position:absolute;top:30px;left:60%;width:80%;height:1px;background:linear-gradient(to right,var(--neon),transparent);opacity:0.3}
+.pipe-step:last-child::after{display:none}
+.pipe-dot{width:60px;height:60px;border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:18px;background:var(--card);position:relative;z-index:1;transition:all 0.3s}
+.pipe-step:hover .pipe-dot{border-color:var(--neon);box-shadow:0 0 20px rgba(0,255,170,0.2)}
+.pipe-name{font-size:11px;font-family:var(--font-mono);color:var(--muted);letter-spacing:0.05em}
+
+/* CTA section */
+.cta-section{position:relative;z-index:2;padding:100px 60px;text-align:center;border-top:1px solid var(--border)}
+.cta-title{font-size:56px;font-weight:800;letter-spacing:-2px;margin-bottom:20px}
+.cta-sub{font-size:15px;color:var(--muted);font-family:var(--font-mono);margin-bottom:40px}
+
+/* footer */
+footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:32px 60px;display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.footer-links{display:flex;gap:28px}
+.footer-links a{font-size:12px;color:var(--muted);font-family:var(--font-mono);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--neon)}
+
+/* terminal block */
+.terminal{background:#07070e;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:60px}
+.term-bar{background:#0d0d16;padding:12px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.dot{width:12px;height:12px;border-radius:50%}
+.dot.r{background:#ff4466}
+.dot.y{background:#ffcc00}
+.dot.g{background:var(--neon)}
+.term-body{padding:28px 32px;font-family:var(--font-mono);font-size:13px;line-height:2}
+.term-line{display:flex;gap:12px}
+.term-prompt{color:var(--neon)}
+.term-cmd{color:var(--text)}
+.term-out{color:var(--muted)}
+.term-highlight{color:var(--neon2)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* scroll reveal */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s,transform 0.6s}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <div class="logo">Nether<span>Box</span></div>
+  <ul class="nav-links">
+    <li><a href="/index.html" class="active">home</a></li>
+    <li><a href="/about.html">about</a></li>
+    <li><a href="/app.html">app</a></li>
+  </ul>
+  <a href="/app.html" class="nav-cta">launch_app →</a>
+</nav>
+
+<section class="hero">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="hero-eyebrow">// automated machine learning</div>
+  <h1 class="hero-title">
+    Train smarter.<br>
+    <span class="line2">Deploy faster.</span>
+  </h1>
+  <p class="hero-desc">Drop your CSV. We race 5 models, pick the winner, and hand you a production-ready model — in under 90 seconds.</p>
+  <div class="hero-actions">
+    <a href="/app.html" class="btn-primary">start_training →</a>
+    <a href="/about.html" class="btn-ghost">learn_more</a>
+  </div>
+</section>
+
+<div class="stats-bar reveal">
+  <div class="stat"><div class="stat-val" id="s1">0</div><div class="stat-label">// models evaluated</div></div>
+  <div class="stat"><div class="stat-val" id="s2">0</div><div class="stat-label">// avg accuracy</div></div>
+  <div class="stat"><div class="stat-val" id="s3">0</div><div class="stat-label">// seconds avg runtime</div></div>
+  <div class="stat"><div class="stat-val" id="s4">0</div><div class="stat-label">// datasets supported</div></div>
+</div>
+
+<section class="section reveal">
+  <div class="section-tag">// capabilities</div>
+  <div class="section-title">Everything automated.<br>Nothing hidden.</div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Auto-detection</div>
+      <div class="feat-desc">Automatically identifies classification vs regression from your target column. No configuration needed.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔬</div>
+      <div class="feat-title">5-model race</div>
+      <div class="feat-desc">Trains LogisticRegression, RandomForest, GradientBoosting, SVC, and DecisionTree in parallel via cross-validation.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧹</div>
+      <div class="feat-title">Smart preprocessing</div>
+      <div class="feat-desc">Handles missing values, encodes categoricals, scales numerics, drops constants — all automatically.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📦</div>
+      <div class="feat-title">Exportable model</div>
+      <div class="feat-desc">Download your best model as a .pkl file — preprocessor bundled in. Load and predict anywhere.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Full metrics report</div>
+      <div class="feat-desc">Accuracy, F1, R², MAE, RMSE — all computed on held-out test data and displayed instantly.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-title">100% local</div>
+      <div class="feat-desc">Your data never leaves your machine. Everything runs on your hardware via the local FastAPI server.</div>
+    </div>
+  </div>
+</section>
+
+<section class="pipeline-section reveal">
+  <div class="section-tag">// how it works</div>
+  <div class="section-title">Six stages.<br>One command.</div>
+  <div class="pipeline">
+    <div class="pipe-step"><div class="pipe-dot">📁</div><div class="pipe-name">ingest</div></div>
+    <div class="pipe-step"><div class="pipe-dot">✅</div><div class="pipe-name">validate</div></div>
+    <div class="pipe-step"><div class="pipe-dot">⚙️</div><div class="pipe-name">transform</div></div>
+    <div class="pipe-step"><div class="pipe-dot">🏋️</div><div class="pipe-name">train</div></div>
+    <div class="pipe-step"><div class="pipe-dot">📏</div><div class="pipe-name">evaluate</div></div>
+    <div class="pipe-step"><div class="pipe-dot">🚀</div><div class="pipe-name">push</div></div>
+  </div>
+  <div class="terminal reveal">
+    <div class="term-bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <div class="term-body">
+      <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">python run.py --file sales_data.csv --target churn</span></div>
+      <div class="term-line"><span class="term-out">→ Loaded 12,450 rows · 18 features · target: churn</span></div>
+      <div class="term-line"><span class="term-out">→ Auto-detected: <span class="term-highlight">classification</span></span></div>
+      <div class="term-line"><span class="term-out">→ Preprocessing complete · 0 nulls · 3 categoricals encoded</span></div>
+      <div class="term-line"><span class="term-out">→ Training 5 models via 5-fold CV ...</span></div>
+      <div class="term-line"><span class="term-out">  RandomForest      <span class="term-highlight">0.9412</span></span></div>
+      <div class="term-line"><span class="term-out">  GradientBoosting  0.9287</span></div>
+      <div class="term-line"><span class="term-out">  SVC               0.9201</span></div>
+      <div class="term-line"><span class="term-highlight">→ Best: RandomForest · Test accuracy: 0.9467 · F1: 0.9451</span></div>
+      <div class="term-line"><span class="term-out">→ Model saved: artifacts/models/automl_estimator.pkl</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section reveal">
+  <div class="cta-title">Ready to train?</div>
+  <div class="cta-sub">// upload your CSV and let NetherBox do the rest</div>
+  <a href="/app.html" class="btn-primary">open_app →</a>
+</section>
+
+<footer>
+  <div class="footer-copy">© 2026 NetherBox · built on AutoML Pipeline</div>
+  <div class="footer-links">
+    <a href="/index.html">home</a>
+    <a href="/about.html">about</a>
+    <a href="/app.html">app</a>
+    <a href="https://dxv39-netherbox.hf.space/docs" target="_blank">api_docs</a>
+  </div>
+</footer>
+
+<script>
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  ring.style.left = e.clientX + 'px';
+  ring.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a,button').forEach(el => {
+  el.addEventListener('mouseenter', () => { ring.style.width='48px'; ring.style.height='48px'; ring.style.borderColor='rgba(0,255,170,0.7)'; });
+  el.addEventListener('mouseleave', () => { ring.style.width='32px'; ring.style.height='32px'; ring.style.borderColor='rgba(0,255,170,0.4)'; });
+});
+
+// counter animation
+function animateCount(el, target, suffix, duration) {
+  let start = 0;
+  const step = Math.ceil(target / (duration / 16));
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = start + suffix;
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+const statsObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCount(document.getElementById('s1'), 5, '', 1200);
+      animateCount(document.getElementById('s2'), 97, '%', 1500);
+      animateCount(document.getElementById('s3'), 90, 's', 1000);
+      animateCount(document.getElementById('s4'), 12, '+', 1200);
+      statsObserver.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+statsObserver.observe(document.querySelector('.stats-bar'));
+</script>
+</body>
+</html>

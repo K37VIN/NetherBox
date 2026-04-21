@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>App — NetherBox</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050507;--bg2:#0a0a0f;--bg3:#0f0f18;--card:#0d0d14;--card2:#111119;--border:rgba(0,255,170,0.12);--border2:rgba(0,255,170,0.25);--neon:#00ffaa;--neon2:#00d4ff;--neon3:#7b5ea7;--neonsoft:rgba(0,255,170,0.07);--text:#e8e8f0;--muted:#6b6b80;--danger:#ff4466;--warn:#ffaa00;--font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-display);overflow-x:hidden;cursor:none;min-height:100vh}
+.cursor{position:fixed;width:8px;height:8px;background:var(--neon);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width 0.15s,height 0.15s}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(0,255,170,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left 0.08s,top 0.08s,width 0.3s,height 0.3s,border-color 0.3s;mix-blend-mode:screen}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,170,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,170,0.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 60px;background:linear-gradient(to bottom,rgba(5,5,7,0.97),transparent);backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--neon);text-shadow:0 0 20px rgba(0,255,170,0.6);text-decoration:none}
+.logo span{color:var(--text);opacity:0.7}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-family:var(--font-mono);letter-spacing:0.05em;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--neon)}
+.api-status{display:flex;align-items:center;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--muted)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status-dot.online{background:var(--neon);box-shadow:0 0 8px rgba(0,255,170,0.6);animation:pulse 2s infinite}
+.status-dot.offline{background:var(--danger);box-shadow:0 0 8px rgba(255,68,102,0.5)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* layout */
+.app-layout{display:grid;grid-template-columns:440px 1fr;min-height:100vh;padding-top:72px;position:relative;z-index:2}
+.left-panel{border-right:1px solid var(--border);padding:40px;display:flex;flex-direction:column;gap:0;overflow-y:auto;background:var(--bg)}
+.right-panel{padding:40px;overflow-y:auto;background:var(--bg2)}
+
+/* panel headers */
+.panel-header{margin-bottom:32px}
+.panel-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;color:var(--neon);text-transform:uppercase;margin-bottom:8px}
+.panel-title{font-size:24px;font-weight:800;letter-spacing:-1px}
+.panel-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono);margin-top:6px;line-height:1.6}
+
+/* form sections */
+.form-section{margin-bottom:28px}
+.form-label{font-size:11px;font-family:var(--font-mono);letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.form-required{color:var(--danger);font-size:10px}
+
+/* file upload zone */
+.upload-zone{border:1px dashed var(--border2);border-radius:8px;padding:32px 24px;text-align:center;transition:all 0.3s;cursor:none;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--neon);background:var(--neonsoft);box-shadow:0 0 20px rgba(0,255,170,0.06)}
+.upload-zone.has-file{border-color:var(--neon);border-style:solid;background:rgba(0,255,170,0.04)}
+.upload-icon{font-size:28px;margin-bottom:12px}
+.upload-main{font-size:14px;font-weight:700;margin-bottom:6px}
+.upload-sub{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
+.upload-file-info{display:none;align-items:center;gap:12px;margin-top:12px;padding:10px 14px;background:rgba(0,255,170,0.06);border-radius:6px;border:1px solid var(--border2)}
+.upload-file-info.show{display:flex}
+.file-name{font-family:var(--font-mono);font-size:12px;color:var(--neon);flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.remove-file{background:none;border:none;color:var(--danger);cursor:none;font-size:16px;padding:0 4px;line-height:1}
+input[type="file"]{position:absolute;inset:0;opacity:0;cursor:none;width:100%;height:100%}
+
+/* text inputs */
+.text-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-family:var(--font-mono);font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s}
+.text-input:focus{border-color:var(--border2);box-shadow:0 0 12px rgba(0,255,170,0.05)}
+.text-input::placeholder{color:var(--muted)}
+
+/* radio group */
+.radio-group{display:flex;gap:8px}
+.radio-opt{flex:1;position:relative}
+.radio-opt input{position:absolute;opacity:0;width:0;height:0}
+.radio-opt label{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font-mono);font-size:12px;color:var(--muted);cursor:none;transition:all 0.2s}
+.radio-opt input:checked + label{border-color:var(--border2);color:var(--neon);background:var(--neonsoft)}
+.radio-opt label:hover{border-color:var(--border2);color:var(--text)}
+
+/* submit btn */
+.submit-btn{width:100%;padding:16px;background:var(--neon);color:#000;font-family:var(--font-mono);font-weight:500;font-size:14px;letter-spacing:0.08em;border:none;border-radius:6px;cursor:none;transition:all 0.25s;margin-top:8px;position:relative;overflow:hidden}
+.submit-btn:hover:not(:disabled){box-shadow:0 0 30px rgba(0,255,170,0.4);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.submit-btn.loading{background:#0d2d1e;color:var(--neon);border:1px solid var(--border2)}
+
+/* divider */
+.divider{height:1px;background:var(--border);margin:24px 0}
+
+/* API URL input */
+.api-url-row{display:flex;gap:8px;align-items:center}
+.api-url-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-family:var(--font-mono);font-size:12px;color:var(--muted);outline:none}
+.api-url-input:focus{border-color:var(--border2);color:var(--text)}
+.check-btn{padding:9px 16px;background:transparent;border:1px solid var(--border);border-radius:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted);cursor:none;transition:all 0.2s;white-space:nowrap}
+.check-btn:hover{border-color:var(--border2);color:var(--neon)}
+
+/* right panel states */
+.state-idle{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 152px);text-align:center;gap:0}
+.idle-graphic{position:relative;width:120px;height:120px;margin:0 auto 32px}
+.idle-ring{width:120px;height:120px;border:1px solid var(--border2);border-radius:50%;position:absolute;animation:ringPulse 3s ease-in-out infinite}
+.idle-ring:nth-child(2){width:80px;height:80px;top:20px;left:20px;animation-delay:0.5s}
+.idle-ring:nth-child(3){width:40px;height:40px;top:40px;left:40px;animation-delay:1s;background:var(--neonsoft)}
+@keyframes ringPulse{0%,100%{opacity:0.2;transform:scale(1)}50%{opacity:0.6;transform:scale(1.03)}}
+.idle-title{font-size:20px;font-weight:700;letter-spacing:-0.5px;margin-bottom:10px}
+.idle-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono);line-height:1.8;max-width:320px}
+
+/* loading state */
+.state-loading{display:none;flex-direction:column;gap:0;min-height:calc(100vh - 152px)}
+.loading-header{margin-bottom:40px}
+.loading-title{font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+.loading-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.stage-tracker{display:flex;flex-direction:column;gap:0}
+.stage-item{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);position:relative}
+.stage-item:last-child{border-bottom:none}
+.stage-indicator{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all 0.4s;font-family:var(--font-mono)}
+.stage-indicator.waiting{color:var(--muted)}
+.stage-indicator.running{border-color:var(--neon2);color:var(--neon2);box-shadow:0 0 12px rgba(0,212,255,0.3);animation:spinRing 1.5s linear infinite}
+.stage-indicator.done{border-color:var(--neon);background:rgba(0,255,170,0.1);color:var(--neon)}
+.stage-indicator.error{border-color:var(--danger);background:rgba(255,68,102,0.1);color:var(--danger)}
+@keyframes spinRing{from{box-shadow:0 0 12px rgba(0,212,255,0.3)}to{box-shadow:0 0 20px rgba(0,212,255,0.6),0 0 12px rgba(0,212,255,0.3)}}
+.stage-info{flex:1}
+.stage-item-name{font-size:14px;font-weight:700;letter-spacing:-0.3px}
+.stage-item-status{font-size:11px;font-family:var(--font-mono);color:var(--muted);margin-top:3px}
+.stage-item-status.running{color:var(--neon2)}
+.stage-item-status.done{color:var(--neon)}
+.stage-item-status.error{color:var(--danger)}
+.stage-time{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+
+/* log stream */
+.log-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-top:28px;max-height:200px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;line-height:2}
+.log-box::-webkit-scrollbar{width:3px}
+.log-box::-webkit-scrollbar-track{background:transparent}
+.log-box::-webkit-scrollbar-thumb{background:var(--border2)}
+.log-line{display:flex;gap:12px}
+.log-time{color:var(--muted);min-width:70px}
+.log-msg{color:var(--text)}
+.log-msg.success{color:var(--neon)}
+.log-msg.warn{color:var(--warn)}
+.log-msg.error{color:var(--danger)}
+
+/* results state */
+.state-results{display:none;flex-direction:column;gap:0}
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.results-title{font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.results-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.download-btn{display:flex;align-items:center;gap:8px;background:var(--neon);color:#000;font-family:var(--font-mono);font-size:12px;font-weight:500;padding:12px 20px;border:none;border-radius:6px;cursor:none;letter-spacing:0.05em;transition:all 0.25s;text-decoration:none;white-space:nowrap}
+.download-btn:hover{box-shadow:0 0 24px rgba(0,255,170,0.4);transform:translateY(-1px)}
+.download-icon{font-size:14px}
+
+/* winner card */
+.winner-card{background:linear-gradient(135deg,rgba(0,255,170,0.06),rgba(0,212,255,0.03));border:1px solid var(--border2);border-radius:10px;padding:28px;margin-bottom:24px;position:relative;overflow:hidden}
+.winner-card::before{content:'BEST MODEL';position:absolute;top:16px;right:20px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;color:var(--neon);opacity:0.5}
+.winner-model{font-size:32px;font-weight:800;letter-spacing:-1.5px;color:var(--neon);margin-bottom:8px}
+.winner-type{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase}
+.winner-score{font-size:14px;font-family:var(--font-mono);color:var(--text);margin-top:16px}
+.winner-score span{color:var(--neon);font-size:20px;font-weight:500}
+
+/* metrics grid */
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 16px;text-align:center}
+.metric-val{font-size:28px;font-weight:800;font-family:var(--font-mono);color:var(--text);letter-spacing:-1px}
+.metric-val.good{color:var(--neon)}
+.metric-val.ok{color:var(--neon2)}
+.metric-label{font-size:10px;font-family:var(--font-mono);color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:6px}
+
+/* model race */
+.race-section{margin-bottom:24px}
+.race-title{font-size:14px;font-weight:700;letter-spacing:-0.3px;margin-bottom:16px}
+.race-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.race-name{font-family:var(--font-mono);font-size:12px;color:var(--text);width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.race-bar-wrap{flex:1;height:6px;background:var(--card);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.race-bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(0.4,0,0.2,1);width:0}
+.race-bar-fill.winner{background:var(--neon);box-shadow:0 0 8px rgba(0,255,170,0.4)}
+.race-bar-fill.other{background:var(--muted)}
+.race-score{font-family:var(--font-mono);font-size:12px;color:var(--muted);width:52px;text-align:right}
+
+
+.validation-section{margin-bottom:24px}
+.val-title{font-size:14px;font-weight:700;letter-spacing:-0.3px;margin-bottom:16px}
+.val-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.val-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.val-key{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.val-val{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--text)}
+.val-val.ok{color:var(--neon)}
+.val-val.warn{color:var(--warn)}
+
+
+.state-error{display:none;align-items:center;justify-content:center;min-height:calc(100vh - 152px)}
+.error-box{background:rgba(255,68,102,0.05);border:1px solid rgba(255,68,102,0.2);border-radius:10px;padding:40px;max-width:480px;text-align:center}
+.error-icon{font-size:36px;margin-bottom:16px}
+.error-title{font-size:20px;font-weight:800;color:var(--danger);letter-spacing:-0.5px;margin-bottom:12px}
+.error-msg{font-size:13px;color:var(--muted);font-family:var(--font-mono);line-height:1.8}
+.retry-btn{margin-top:24px;padding:12px 28px;background:transparent;border:1px solid rgba(255,68,102,0.4);color:var(--danger);font-family:var(--font-mono);font-size:12px;border-radius:6px;cursor:none;transition:all 0.2s}
+.retry-btn:hover{background:rgba(255,68,102,0.08)}
+
+
+.section-sep{height:1px;background:var(--border);margin:20px 0}
+
+
+.predict-section{border-top:1px solid var(--border);padding-top:24px;margin-top:8px}
+.predict-title{font-size:14px;font-weight:700;letter-spacing:-0.3px;margin-bottom:16px}
+.predict-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:var(--text);outline:none;resize:vertical;min-height:80px}
+.predict-input:focus{border-color:var(--border2)}
+.predict-btn{padding:10px 24px;background:transparent;border:1px solid var(--border2);color:var(--neon);font-family:var(--font-mono);font-size:12px;border-radius:6px;cursor:none;transition:all 0.2s;margin-top:8px}
+.predict-btn:hover{background:var(--neonsoft)}
+.predict-result{margin-top:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-family:var(--font-mono);font-size:13px;color:var(--neon);display:none}
+
+
+.toast{position:fixed;bottom:32px;right:32px;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px 20px;font-family:var(--font-mono);font-size:12px;color:var(--neon);z-index:200;transform:translateY(80px);opacity:0;transition:all 0.3s;box-shadow:0 0 20px rgba(0,255,170,0.1)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{border-color:rgba(255,68,102,0.3);color:var(--danger)}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div class="toast" id="toast"></div>
+
+<nav>
+  <a href="/index.html" class="logo">Nether<span>Box</span></a>
+  <ul class="nav-links">
+    <li><a href="/index.html">home</a></li>
+    <li><a href="/about.html">about</a></li>
+    <li><a href="/app.html" class="active">app</a></li>
+  </ul>
+  <div class="api-status">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text" style="font-size:11px">checking api...</span>
+  </div>
+</nav>
+
+<div class="app-layout">
+
+  
+  <div class="left-panel">
+    <div class="panel-header">
+      <div class="panel-tag">// configuration</div>
+      <div class="panel-title">Train a model</div>
+      <div class="panel-sub">Upload your CSV, set the target column, and let the pipeline do everything else.</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">dataset <span class="form-required">required</span></div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept=".csv"/>
+        <div class="upload-icon">📂</div>
+        <div class="upload-main">Drop CSV here or click to browse</div>
+        <div class="upload-sub">Only .csv files supported · max 200MB</div>
+        <div class="upload-file-info" id="file-info">
+          <span class="file-name" id="file-name-text"></span>
+          <span class="file-size" id="file-size-text"></span>
+          <button class="remove-file" id="remove-file" type="button">×</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">target column <span class="form-required">required</span></div>
+      <input type="text" class="text-input" id="target-col" placeholder="e.g.  price,  churn,  label" autocomplete="off"/>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">problem type</div>
+      <div class="radio-group">
+        <div class="radio-opt">
+          <input type="radio" name="problem" id="p-auto" value="auto" checked/>
+          <label for="p-auto">⚡ auto-detect</label>
+        </div>
+        <div class="radio-opt">
+          <input type="radio" name="problem" id="p-clf" value="classification"/>
+          <label for="p-clf">🏷 classification</label>
+        </div>
+        <div class="radio-opt">
+          <input type="radio" name="problem" id="p-reg" value="regression"/>
+          <label for="p-reg">📈 regression</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="train-btn" disabled>
+      <span id="btn-text">select a CSV to begin</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <div class="form-section">
+      <div class="form-label">api endpoint</div>
+      <div class="api-url-row">
+        <input type="text" class="api-url-input" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000"/>
+        <button class="check-btn" id="check-api">check</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="right-panel">
+
+    
+    <div class="state-idle" id="state-idle">
+      <div class="idle-graphic">
+        <div class="idle-ring"></div>
+        <div class="idle-ring"></div>
+        <div class="idle-ring"></div>
+      </div>
+      <div class="idle-title">Waiting for input</div>
+      <div class="idle-sub">Configure your dataset and target column on the left, then click Train to start the AutoML pipeline.</div>
+    </div>
+
+    
+    <div class="state-loading" id="state-loading">
+      <div class="loading-header">
+        <div class="loading-title">Pipeline running...</div>
+        <div class="loading-sub" id="loading-eta">Estimated time: 30–90 seconds depending on dataset size</div>
+      </div>
+      <div class="stage-tracker" id="stage-tracker">
+        <div class="stage-item" id="stage-0">
+          <div class="stage-indicator waiting" id="si-0">01</div>
+          <div class="stage-info"><div class="stage-item-name">Data Ingestion</div><div class="stage-item-status" id="ss-0">waiting</div></div>
+          <div class="stage-time" id="st-0"></div>
+        </div>
+        <div class="stage-item" id="stage-1">
+          <div class="stage-indicator waiting" id="si-1">02</div>
+          <div class="stage-info"><div class="stage-item-name">Data Validation</div><div class="stage-item-status" id="ss-1">waiting</div></div>
+          <div class="stage-time" id="st-1"></div>
+        </div>
+        <div class="stage-item" id="stage-2">
+          <div class="stage-indicator waiting" id="si-2">03</div>
+          <div class="stage-info"><div class="stage-item-name">Data Transformation</div><div class="stage-item-status" id="ss-2">waiting</div></div>
+          <div class="stage-time" id="st-2"></div>
+        </div>
+        <div class="stage-item" id="stage-3">
+          <div class="stage-indicator waiting" id="si-3">04</div>
+          <div class="stage-info"><div class="stage-item-name">Model Training</div><div class="stage-item-status" id="ss-3">waiting</div></div>
+          <div class="stage-time" id="st-3"></div>
+        </div>
+        <div class="stage-item" id="stage-4">
+          <div class="stage-indicator waiting" id="si-4">05</div>
+          <div class="stage-info"><div class="stage-item-name">Model Evaluation</div><div class="stage-item-status" id="ss-4">waiting</div></div>
+          <div class="stage-time" id="st-4"></div>
+        </div>
+        <div class="stage-item" id="stage-5">
+          <div class="stage-indicator waiting" id="si-5">06</div>
+          <div class="stage-info"><div class="stage-item-name">Model Pusher</div><div class="stage-item-status" id="ss-5">waiting</div></div>
+          <div class="stage-time" id="st-5"></div>
+        </div>
+      </div>
+      <div class="log-box" id="log-box">
+        <div class="log-line"><span class="log-time">00:00:00</span><span class="log-msg">pipeline initialised</span></div>
+      </div>
+    </div>
+
+    
+    <div class="state-results" id="state-results">
+      <div class="results-header">
+        <div>
+          <div class="results-title">Training complete</div>
+          <div class="results-sub" id="results-sub">Pipeline finished successfully</div>
+        </div>
+        <a class="download-btn" id="download-btn" href="#" download="automl_estimator.pkl">
+          <span class="download-icon">⬇</span> download model
+        </a>
+      </div>
+
+     
+      <div class="winner-card">
+        <div class="winner-model" id="winner-model">—</div>
+        <div class="winner-type" id="winner-type">// problem type</div>
+        <div class="winner-score">cv score: <span id="winner-cv">—</span></div>
+      </div>
+
+      
+      <div class="metrics-grid" id="metrics-grid"></div>
+
+      
+      <div class="race-section">
+        <div class="race-title">Model race — cross-validation scores</div>
+        <div id="race-bars"></div>
+      </div>
+
+      <div class="section-sep"></div>
+
+      
+      <div class="validation-section">
+        <div class="val-title">Dataset info</div>
+        <div class="val-grid" id="val-grid"></div>
+      </div>
+
+      <div class="section-sep"></div>
+
+      
+      <div class="predict-section">
+        <div class="predict-title">Quick predict — single row</div>
+        <textarea class="predict-input" id="predict-json" placeholder='{"col1": value, "col2": value, ...}'></textarea>
+        <button class="predict-btn" id="predict-btn">run prediction →</button>
+        <div class="predict-result" id="predict-result"></div>
+      </div>
+    </div>
+
+    
+    <div class="state-error" id="state-error">
+      <div class="error-box">
+        <div class="error-icon">⚠</div>
+        <div class="error-title">Pipeline failed</div>
+        <div class="error-msg" id="error-msg">An error occurred during training.</div>
+        <button class="retry-btn" id="retry-btn">retry →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+const HF_SPACE_URL = "https://dxv39-netherbox.hf.space";
+
+const API_BASE = () => {
+  const customUrl = document.getElementById('api-url').value.trim();
+  
+  return (customUrl || HF_SPACE_URL).replace(/\/$/, '');
+};
+
+let savedFilePath = null;
+let trainResult = null;
+
+
+document.getElementById('api-url').value = HF_SPACE_URL;
+
+
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('a,button,input,textarea,label').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(0,255,170,0.65)'});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(0,255,170,0.4)'});
+});
+
+
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+
+async function checkAPI() {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  dot.className = 'status-dot';
+  txt.textContent = 'connecting...';
+  try {
+    
+    const r = await fetch(API_BASE()+'/health');
+    if(r.ok) {
+      dot.className = 'status-dot online';
+      txt.textContent = 'api online';
+    } else { throw new Error(); }
+  } catch {
+    dot.className = 'status-dot offline';
+    txt.textContent = 'api offline';
+  }
+}
+document.getElementById('check-api').addEventListener('click', checkAPI);
+checkAPI();
+setInterval(checkAPI, 30000);
+
+
+const zone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+let selectedFile = null;
+
+fileInput.addEventListener('change', e => { if(e.target.files[0]) setFile(e.target.files[0]); });
+
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if(f && f.name.endsWith('.csv')) setFile(f);
+  else showToast('Only .csv files supported', true);
+});
+
+function setFile(f) {
+  selectedFile = f;
+  zone.classList.add('has-file');
+  const info = document.getElementById('file-info');
+  info.classList.add('show');
+  document.getElementById('file-name-text').textContent = f.name;
+  document.getElementById('file-size-text').textContent = formatBytes(f.size);
+  updateTrainBtn();
+}
+
+document.getElementById('remove-file').addEventListener('click', e => {
+  e.stopPropagation();
+  selectedFile = null;
+  zone.classList.remove('has-file');
+  document.getElementById('file-info').classList.remove('show');
+  fileInput.value = '';
+  updateTrainBtn();
+});
+
+function formatBytes(b) {
+  if(b<1024) return b+'B';
+  if(b<1048576) return (b/1024).toFixed(1)+'KB';
+  return (b/1048576).toFixed(1)+'MB';
+}
+
+
+document.getElementById('target-col').addEventListener('input', updateTrainBtn);
+
+function updateTrainBtn() {
+  const btn = document.getElementById('train-btn');
+  const txt = document.getElementById('btn-text');
+  const hasFile = !!selectedFile;
+  const hasTarget = document.getElementById('target-col').value.trim().length > 0;
+  if(!hasFile) { btn.disabled=true; txt.textContent='select a CSV to begin'; return; }
+  if(!hasTarget) { btn.disabled=true; txt.textContent='enter target column name'; return; }
+  btn.disabled=false;
+  txt.textContent='run_pipeline →';
+}
+
+
+function showState(name) {
+  ['idle','loading','results','error'].forEach(s => {
+    const el = document.getElementById('state-'+s);
+    el.style.display = s===name ? 'flex' : 'none';
+    if(s===name && s!=='idle' && s!=='error') el.style.flexDirection='column';
+  });
+}
+showState('idle');
+
+// ── stage animation ─────────────────────────────────────────────────────────
+const STAGES = ['Data Ingestion','Data Validation','Data Transformation','Model Training','Model Evaluation','Model Pusher'];
+const STAGE_DURATIONS = [4, 3, 5, 45, 5, 3];
+
+function resetStages() {
+  STAGES.forEach((_,i) => {
+    document.getElementById('si-'+i).className='stage-indicator waiting';
+    document.getElementById('si-'+i).textContent='0'+(i+1);
+    document.getElementById('ss-'+i).className='stage-item-status';
+    document.getElementById('ss-'+i).textContent='waiting';
+    document.getElementById('st-'+i).textContent='';
+  });
+}
+
+let logStart;
+function addLog(msg, type='') {
+  const box = document.getElementById('log-box');
+  const t = new Date();
+  const ts = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0')+':'+t.getSeconds().toString().padStart(2,'0');
+  const line = document.createElement('div');
+  line.className='log-line';
+  line.innerHTML=`<span class="log-time">${ts}</span><span class="log-msg ${type}">${msg}</span>`;
+  box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+}
+
+function runStageAnimation(callback) {
+  resetStages();
+  document.getElementById('log-box').innerHTML='';
+  logStart = Date.now();
+  addLog('pipeline initialised');
+
+  let stageIdx = 0;
+  let cumulativeDelay = 0;
+
+  function nextStage() {
+    if(stageIdx >= STAGES.length) { callback(); return; }
+    const i = stageIdx;
+    const delay = STAGE_DURATIONS[i] * 1000;
+
+    setTimeout(() => {
+      document.getElementById('si-'+i).className='stage-indicator running';
+      document.getElementById('ss-'+i).className='stage-item-status running';
+      document.getElementById('ss-'+i).textContent='running...';
+      addLog('=== '+STAGES[i]+' started ===');
+
+      setTimeout(() => {
+        document.getElementById('si-'+i).className='stage-indicator done';
+        document.getElementById('si-'+i).textContent='✓';
+        const elapsed = (STAGE_DURATIONS[i]).toFixed(1)+'s';
+        document.getElementById('ss-'+i).className='stage-item-status done';
+        document.getElementById('ss-'+i).textContent='complete';
+        document.getElementById('st-'+i).textContent=elapsed;
+        addLog('=== '+STAGES[i]+' complete ===','success');
+        stageIdx++;
+        nextStage();
+      }, delay);
+    }, cumulativeDelay);
+
+    cumulativeDelay += delay;
+  }
+
+  nextStage();
+}
+
+// ── train ──────────────────────────────────────────────────────────────────
+document.getElementById('train-btn').addEventListener('click', async () => {
+  if(!selectedFile) return;
+  const targetCol = document.getElementById('target-col').value.trim();
+  const problemType = document.querySelector('input[name="problem"]:checked').value;
+
+  const btn = document.getElementById('train-btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('btn-text').textContent = 'training...';
+
+  showState('loading');
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+  formData.append('target_column', targetCol);
+  if(problemType !== 'auto') formData.append('problem_type', problemType);
+
+  let animDone = false;
+  runStageAnimation(() => { animDone = true; });
+
+  try {
+    
+    const uploadResp = await fetch(API_BASE()+'/upload-dataset', {
+      method: 'POST',
+      body: formData
+    });
+
+    if(!uploadResp.ok) {
+      const err = await uploadResp.json();
+      throw new Error(err.detail || 'Upload failed');
+    }
+
+    const uploadData = await uploadResp.json();
+    savedFilePath = uploadData.saved_path;
+    addLog('dataset synchronized to cloud','success');
+
+    
+    const trainResp = await fetch(API_BASE()+'/train', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        dataset_path: savedFilePath,
+        target_column: targetCol,
+        problem_type: problemType === 'auto' ? null : problemType
+      })
+    });
+
+    if(!trainResp.ok) {
+      const err = await trainResp.json();
+      throw new Error(err.detail || 'Training failed');
+    }
+
+    const apiResult = await trainResp.json();
+    addLog('pipeline results ready','success');
+
+  
+    const waitForAnim = setInterval(() => {
+      if(animDone) {
+        clearInterval(waitForAnim);
+        showResults(apiResult.result);
+      }
+    }, 500);
+
+  } catch(err) {
+    STAGES.forEach((_,i) => {
+      const indicator = document.getElementById('si-'+i);
+      if(indicator.className.includes('waiting') || indicator.className.includes('running')) {
+        indicator.className='stage-indicator error';
+        indicator.textContent='✗';
+        document.getElementById('ss-'+i).className='stage-item-status error';
+        document.getElementById('ss-'+i).textContent='failed';
+      }
+    });
+    addLog(err.message,'error');
+    
+    setTimeout(() => {
+      document.getElementById('error-msg').textContent = err.message;
+      showState('error');
+    }, 1200);
+  } finally {
+    btn.disabled=false;
+    btn.classList.remove('loading');
+    document.getElementById('btn-text').textContent='run_pipeline →';
+  }
+});
+
+
+function showResults(result) {
+  trainResult = result;
+  showState('results');
+
+  document.getElementById('winner-model').textContent = result.best_model || '—';
+  document.getElementById('winner-type').textContent = '// ' + (result.problem_type || 'unknown');
+  document.getElementById('winner-cv').textContent = result.best_score ? result.best_score.toFixed(4) : '—';
+  document.getElementById('results-sub').textContent =
+    `Cloud trained · winner: ${result.best_model} · ${new Date().toLocaleTimeString()}`;
+
+  const mg = document.getElementById('metrics-grid');
+  mg.innerHTML = '';
+  const metrics = result.test_metrics || {};
+  Object.entries(metrics).forEach(([k,v]) => {
+    const val = typeof v === 'number' ? v.toFixed(4) : v;
+    const colorClass = parseFloat(v) > 0.85 ? 'good' : parseFloat(v) > 0.7 ? 'ok' : '';
+    mg.innerHTML += `<div class="metric-card">
+      <div class="metric-val ${colorClass}">${val}</div>
+      <div class="metric-label">${k}</div>
+    </div>`;
+  });
+
+  const allScores = result.all_scores || {};
+  const sorted = Object.entries(allScores).sort((a,b)=>b[1]-a[1]);
+  const maxScore = sorted[0]?.[1] || 1;
+  const raceBars = document.getElementById('race-bars');
+  raceBars.innerHTML = '';
+  sorted.forEach(([name, score], i) => {
+    const pct = Math.round((score / maxScore) * 100);
+    raceBars.innerHTML += `<div class="race-bar-row">
+      <div class="race-name">${name}</div>
+      <div class="race-bar-wrap"><div class="race-bar-fill ${i===0?'winner':'other'}" data-pct="${pct}"></div></div>
+      <div class="race-score">${score.toFixed(4)}</div>
+    </div>`;
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.race-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 100);
+
+  const valGrid = document.getElementById('val-grid');
+  valGrid.innerHTML = '';
+  const summary = [
+    ['Samples', result.n_samples || '—'],
+    ['Features', result.n_features || '—'],
+    ['Best Score', result.best_score ? result.best_score.toFixed(4) : '—'],
+    ['Run ID', result.mlflow_run_id ? result.mlflow_run_id.slice(0,8) : 'local']
+  ];
+  summary.forEach(([k,v]) => {
+    valGrid.innerHTML += `<div class="val-item"><span class="val-key">${k}</span><span class="val-val ok">${v}</span></div>`;
+  });
+
+  setupDownload();
+  showToast('Pipeline success! Download your .pkl below.');
+}
+
+
+function setupDownload() {
+  const btn = document.getElementById('download-btn');
+  btn.onclick = async (e) => {
+    e.preventDefault();
+    try {
+      const resp = await fetch(API_BASE()+'/download-model');
+      if(!resp.ok) throw new Error('Cloud artifact missing');
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'neuralforge_model.pkl';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Artifact downloaded!');
+    } catch(err) {
+      showToast('Download failed: '+err.message, true);
+    }
+  };
+}
+
+
+document.getElementById('predict-btn').addEventListener('click', async () => {
+  const raw = document.getElementById('predict-json').value.trim();
+  const resultEl = document.getElementById('predict-result');
+  if(!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch { showToast('Invalid JSON', true); return; }
+
+  try {
+    const resp = await fetch(API_BASE()+'/predict', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    if(!resp.ok) throw new Error('Prediction failed');
+    const result = await resp.json();
+    resultEl.style.display='block';
+    resultEl.textContent = 'Output: ' + JSON.stringify(result.predictions);
+    showToast('Inference complete');
+  } catch(err) {
+    resultEl.style.display='block';
+    resultEl.style.color='var(--danger)';
+    resultEl.textContent = 'error: '+err.message;
+  }
+});
+
+document.getElementById('retry-btn').addEventListener('click', () => showState('idle'));
+</script>
+</body>
+</html>

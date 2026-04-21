@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>About — NeuralForge AutoML</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050507;--bg2:#0a0a0f;--bg3:#0f0f18;--card:#0d0d14;--border:rgba(0,255,170,0.12);--border2:rgba(0,255,170,0.25);--neon:#00ffaa;--neon2:#00d4ff;--neon3:#7b5ea7;--neonsoft:rgba(0,255,170,0.07);--text:#e8e8f0;--muted:#6b6b80;--font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-display);overflow-x:hidden;cursor:none}
+.cursor{position:fixed;width:8px;height:8px;background:var(--neon);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(0,255,170,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.15s,width 0.3s,height 0.3s;mix-blend-mode:screen}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,170,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 60px;background:linear-gradient(to bottom,rgba(5,5,7,0.95),transparent);backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--neon);text-shadow:0 0 20px rgba(0,255,170,0.6)}
+.logo span{color:var(--text);opacity:0.7}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-family:var(--font-mono);letter-spacing:0.05em;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--neon)}
+.nav-cta{background:transparent;border:1px solid var(--border2);color:var(--neon);font-family:var(--font-mono);font-size:12px;padding:9px 22px;border-radius:3px;cursor:none;transition:all 0.25s;letter-spacing:0.08em;text-decoration:none}
+.nav-cta:hover{background:var(--neonsoft);box-shadow:0 0 20px rgba(0,255,170,0.15)}
+
+.page-hero{padding:160px 60px 80px;position:relative;z-index:2;border-bottom:1px solid var(--border)}
+.page-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;color:var(--neon);text-transform:uppercase;margin-bottom:20px}
+.page-title{font-size:clamp(48px,6vw,80px);font-weight:800;letter-spacing:-3px;line-height:0.95;margin-bottom:24px}
+.page-title em{font-style:normal;color:var(--neon)}
+.page-sub{max-width:600px;font-size:15px;color:var(--muted);font-family:var(--font-mono);font-weight:300;line-height:1.8}
+
+.content{position:relative;z-index:2;padding:80px 60px;max-width:1200px}
+
+/* what section */
+.what-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;margin-bottom:100px}
+.what-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;color:var(--neon);text-transform:uppercase;margin-bottom:16px}
+.what-title{font-size:40px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:24px}
+.what-body{font-size:14px;color:var(--muted);font-family:var(--font-mono);font-weight:300;line-height:1.9}
+.what-body + .what-body{margin-top:16px}
+
+/* tech stack */
+.tech-section{margin-bottom:100px}
+.section-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;color:var(--neon);text-transform:uppercase;margin-bottom:40px}
+.tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.tech-card{background:var(--card);padding:32px;transition:background 0.3s}
+.tech-card:hover{background:var(--bg3)}
+.tech-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+.tech-role{font-size:11px;font-family:var(--font-mono);color:var(--neon);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
+.tech-desc{font-size:12px;color:var(--muted);font-family:var(--font-mono);font-weight:300;line-height:1.8}
+
+/* pipeline deep dive */
+.pipeline-detail{margin-bottom:100px}
+.stage-list{display:flex;flex-direction:column;gap:1px;background:var(--border);margin-top:40px}
+.stage{background:var(--card);display:grid;grid-template-columns:60px 200px 1fr auto;align-items:center;gap:32px;padding:24px 32px;transition:background 0.3s;cursor:default}
+.stage:hover{background:var(--bg3)}
+.stage-num{font-size:32px;font-weight:800;color:var(--border2);font-family:var(--font-mono)}
+.stage-name{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.stage-file{font-size:11px;font-family:var(--font-mono);color:var(--neon);margin-top:4px}
+.stage-desc{font-size:12px;color:var(--muted);font-family:var(--font-mono);font-weight:300;line-height:1.7}
+.stage-badge{font-size:10px;font-family:var(--font-mono);padding:4px 12px;border:1px solid var(--border2);border-radius:2px;color:var(--neon);white-space:nowrap}
+
+/* model table */
+.models-section{margin-bottom:100px}
+.model-table{width:100%;border-collapse:collapse;margin-top:40px;font-family:var(--font-mono);font-size:13px}
+.model-table th{text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:400}
+.model-table td{padding:16px;border-bottom:1px solid var(--border);color:var(--text)}
+.model-table tr:hover td{background:var(--neonsoft)}
+.badge{display:inline-block;padding:3px 10px;border-radius:2px;font-size:10px;letter-spacing:0.05em}
+.badge.clf{background:rgba(0,212,255,0.1);color:var(--neon2);border:1px solid rgba(0,212,255,0.2)}
+.badge.reg{background:rgba(123,94,167,0.15);color:#b89fd4;border:1px solid rgba(123,94,167,0.3)}
+.badge.both{background:rgba(0,255,170,0.08);color:var(--neon);border:1px solid var(--border2)}
+
+footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:32px 60px;display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.footer-links{display:flex;gap:28px}
+.footer-links a{font-size:12px;color:var(--muted);font-family:var(--font-mono);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--neon)}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.6s,transform 0.6s}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <div class="logo">Neural<span>Forge</span></div>
+  <ul class="nav-links">
+    <li><a href="/index.html">home</a></li>
+    <li><a href="/about.html" class="active">about</a></li>
+    <li><a href="/app.html">app</a></li>
+  </ul>
+  <a href="/app.html" class="nav-cta">launch_app →</a>
+</nav>
+
+<div class="page-hero">
+  <div class="page-eyebrow">// about this project</div>
+  <h1 class="page-title">What is<br><em>NetherBox?</em></h1>
+  <p class="page-sub">A fully automated ML pipeline that takes raw CSV data and produces a production-ready trained model — with zero manual preprocessing, zero model selection, and zero guesswork.</p>
+</div>
+
+<div class="content">
+  <div class="what-grid reveal">
+    <div>
+      <div class="what-label">// the problem</div>
+      <div class="what-title">ML is too much work</div>
+      <p class="what-body">Most data scientists spend 80% of their time on data cleaning, feature engineering, and model selection — not on the actual insight. Every new dataset means the same tedious pipeline written from scratch.</p>
+      <p class="what-body">And tools like ChatGPT? They give you answers in a conversation. When the chat ends, everything is gone. No saved model. No reproducibility. No deployment path.</p>
+    </div>
+    <div>
+      <div class="what-label">// the solution</div>
+      <div class="what-title">One pipeline, any data</div>
+      <p class="what-body">NetherBox automates the entire ML workflow. Drop in your CSV, tell it which column to predict, and the pipeline handles everything: cleaning, encoding, scaling, training five models, picking the best one, and packaging it for deployment.</p>
+      <p class="what-body">The result is a real, saved model file that lives on your machine — not a chat bubble. Load it tomorrow, next week, or next year. It works.</p>
+    </div>
+  </div>
+
+  <div class="tech-section reveal">
+    <div class="section-label">// tech stack</div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-name">scikit-learn</div>
+        <div class="tech-role">ml engine</div>
+        <div class="tech-desc">All preprocessing pipelines and candidate models. ColumnTransformer handles numeric/categorical splits. Cross-validation picks the winner.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">FastAPI</div>
+        <div class="tech-role">rest api</div>
+        <div class="tech-desc">Async Python API with automatic docs at /docs. Handles file uploads, training triggers, prediction calls, and model downloads.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">MLflow</div>
+        <div class="tech-role">experiment tracking</div>
+        <div class="tech-desc">Every training run is logged with CV scores for all 5 models, test metrics, and the model artifact. Browse at localhost:5001.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Docker</div>
+        <div class="tech-role">containerisation</div>
+        <div class="tech-desc">Multi-stage Dockerfile produces a slim runtime image. Run the entire stack anywhere without environment setup.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pipeline-detail reveal">
+    <div class="section-label">// pipeline stages</div>
+    <div class="stage-list">
+      <div class="stage">
+        <div class="stage-num">01</div>
+        <div><div class="stage-name">Data Ingestion</div><div class="stage-file">data_ingestion.py</div></div>
+        <div class="stage-desc">Loads your CSV, auto-detects the problem type (classification if target has ≤20 unique values or is string, regression otherwise), and splits into 80/20 train/test with stratification for classifiers.</div>
+        <div class="stage-badge">auto-detect</div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">02</div>
+        <div><div class="stage-name">Data Validation</div><div class="stage-file">data_validation.py</div></div>
+        <div class="stage-desc">Checks for missing values, duplicate rows, constant columns, and target nulls. Writes a full JSON report to artifacts/reports/. Warns but doesn't block on minor issues.</div>
+        <div class="stage-badge">report</div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">03</div>
+        <div><div class="stage-name">Data Transformation</div><div class="stage-file">data_transformation.py</div></div>
+        <div class="stage-desc">Numeric columns: median imputation + StandardScaler. Categorical columns: most-frequent imputation + OneHotEncoder. High-cardinality columns capped at 15 categories.</div>
+        <div class="stage-badge">sklearn pipeline</div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">04</div>
+        <div><div class="stage-name">Model Training</div><div class="stage-file">model_trainer.py</div></div>
+        <div class="stage-desc">Runs 5-fold cross-validation on 5 candidate models in parallel. Scores by F1-weighted for classification, R² for regression. Refits the winner on full training data.</div>
+        <div class="stage-badge">5-fold CV</div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">05</div>
+        <div><div class="stage-name">Model Evaluation</div><div class="stage-file">model_evaluation.py</div></div>
+        <div class="stage-desc">Evaluates the best model on held-out test data. Logs all metrics to MLflow. Saves a metrics.json report. Classification: accuracy + F1. Regression: R², MAE, RMSE.</div>
+        <div class="stage-badge">mlflow</div>
+      </div>
+      <div class="stage">
+        <div class="stage-num">06</div>
+        <div><div class="stage-name">Model Pusher</div><div class="stage-file">model_pusher.py</div></div>
+        <div class="stage-desc">Bundles the preprocessor and best model into a single AutoMLEstimator pickle. This is the file you download — load it anywhere and call .predict() directly.</div>
+        <div class="stage-badge">export</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="models-section reveal">
+    <div class="section-label">// candidate models</div>
+    <table class="model-table">
+      <thead>
+        <tr><th>model</th><th>type</th><th>cv metric</th><th>strength</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>LogisticRegression</td><td><span class="badge clf">classification</span></td><td>F1 weighted</td><td>Fast, interpretable, strong baseline</td></tr>
+        <tr><td>RandomForest</td><td><span class="badge both">both</span></td><td>F1 / R²</td><td>Robust, handles non-linearity, low tuning</td></tr>
+        <tr><td>GradientBoosting</td><td><span class="badge both">both</span></td><td>F1 / R²</td><td>High accuracy on tabular data</td></tr>
+        <tr><td>SVC / SVR</td><td><span class="badge both">both</span></td><td>F1 / R²</td><td>Strong on smaller datasets, complex boundaries</td></tr>
+        <tr><td>DecisionTree</td><td><span class="badge both">both</span></td><td>F1 / R²</td><td>Interpretable, no scaling needed</td></tr>
+        <tr><td>Ridge</td><td><span class="badge reg">regression</span></td><td>R²</td><td>Best for linear relationships, fast</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-copy">© 2026 NetherBox · built on AutoML Pipeline</div>
+  <div class="footer-links">
+    <a href="/index.html">home</a>
+    <a href="/about.html">about</a>
+    <a href="/app.html">app</a>
+    <a href="https://dxv39-netherbox.hf.space/docs" target="_blank">api_docs</a>
+  </div>
+</footer>
+
+<script>
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px'});
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';ring.style.borderColor='rgba(0,255,170,0.7)'});
+  el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(0,255,170,0.4)'});
+});
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
