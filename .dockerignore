@@ -1,0 +1,58 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# DVC cache (large — don't bake into image)
+.dvc/cache/
+.dvc/tmp/
+
+# MLflow runs (regenerated at runtime)
+mlruns/
+
+# Logs
+logs/
+*.log
+
+# Artifacts (regenerated at runtime)
+artifacts/raw_data/
+artifacts/processed_data/
+artifacts/models/
+artifacts/reports/
+
+# Uploaded datasets (user data, not part of image)
+uploads/
+
+# Demo / test data
+demo_data/
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+notebooks/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+*.pyo
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# DVC
+.dvc/cache/
+.dvc/tmp/
+.dvc/plots/
+
+# MLflow
+mlruns/
+
+# Logs
+logs/
+*.log
+
+# Artifacts (tracked by DVC, not git)
+artifacts/raw_data/
+artifacts/processed_data/
+artifacts/models/
+artifacts/reports/
+
+# Demo data
+demo_data/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# OS
+.DS_Store
+Thumbs.db
