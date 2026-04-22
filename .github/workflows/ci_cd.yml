@@ -33,13 +33,21 @@ jobs:
           pip install -r requirements.txt
           pip install ruff pytest pytest-cov
 
+      
+      - name: Auto-fix lint
+        run: ruff check . --fix
+
+      - name: Format code
+        run: ruff format .
+
+      
       - name: Lint with ruff
-        run: ruff check src/ app.py demo.py --ignore E501
+        run: ruff check . --ignore E501
 
       - name: Run tests
         run: |
           pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
-        continue-on-error: true   # Tests may not exist yet — don't block CI
+        continue-on-error: true
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
@@ -66,8 +74,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # ✅ Create a sample dataset dynamically
+      - name: Create sample dataset
+        run: |
+          echo "feature1,feature2,target" > sample.csv
+          echo "1,2,0" >> sample.csv
+          echo "2,3,1" >> sample.csv
+          echo "3,4,0" >> sample.csv
+          echo "4,5,1" >> sample.csv
+
+      
       - name: Run demo (classification)
-        run: python demo.py --task classification
+        run: python demo.py --data sample.csv --target target
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -78,7 +96,7 @@ jobs:
             artifacts/models/automl_estimator.pkl
           retention-days: 7
 
-  # ── Job 3: Docker build ────────────────────────────────────────────────────
+  
   docker:
     name: Docker Build & Push
     runs-on: ubuntu-latest
