@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 
@@ -10,22 +8,21 @@ from src.components.model_evaluation import ModelEvaluation
 from src.components.model_pusher import ModelPusher
 from src.components.model_trainer import ModelTrainer
 from src.constants import (
-    ARTIFACTS_DIR,
     BEST_MODEL_FILE,
     EXPERIMENT_NAME,
     METRICS_FILE,
+    MLFLOW_TRACKING_URI,
     MODEL_CONFIG_FILE,
     MODEL_DIR,
     PREPROCESSOR_FILE,
     PROCESSED_DATA_DIR,
-    RAW_DATA_DIR,
     RANDOM_STATE,
+    RAW_DATA_DIR,
     REPORT_DIR,
     SCHEMA_FILE,
     TEST_FILE,
     TEST_SIZE,
     TRAIN_FILE,
-    MLFLOW_TRACKING_URI,
 )
 from src.entity.config_entity import (
     DataIngestionConfig,

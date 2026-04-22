@@ -6,7 +6,7 @@ from typing import Dict, Optional
 class DataIngestionArtifact:
     train_file_path: str
     test_file_path: str
-    problem_type: str          
+    problem_type: str
     target_column: str
     n_features: int
     n_samples: int
@@ -40,4 +40,3 @@ class ModelEvaluationArtifact:
     metrics: Dict[str, float]
     best_model_name: str
     mlflow_run_id: Optional[str]
-

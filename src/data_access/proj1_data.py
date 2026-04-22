@@ -23,6 +23,7 @@ class DataLoader:
     def from_mongodb(self, collection_name: str, query: dict = None) -> pd.DataFrame:
         """Load data from a MongoDB collection."""
         from src.configuration.mongo_db_connection import MongoDBClient
+
         client = MongoDBClient()
         col = client.get_collection(collection_name)
         records = list(col.find(query or {}, {"_id": 0}))

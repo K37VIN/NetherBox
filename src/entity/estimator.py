@@ -1,8 +1,9 @@
 import pickle
+import sys
 from pathlib import Path
+
 from src.exception import MyException
 from src.logger import logger
-import sys
 
 
 class AutoMLEstimator:
@@ -43,4 +44,3 @@ class AutoMLEstimator:
             estimator = pickle.load(f)
         logger.info(f"AutoMLEstimator loaded from {path}")
         return estimator
-   

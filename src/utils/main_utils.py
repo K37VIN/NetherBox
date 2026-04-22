@@ -11,15 +11,15 @@ import yaml
 from src.exception import MyException
 from src.logger import logger
 
-
 # ── File I/O ──────────────────────────────────────────────────────────────────
+
 
 def read_yaml(path: str) -> dict:
     try:
         with open(path) as f:
             return yaml.safe_load(f) or {}
     except Exception as e:
-        raise AutoMLException(f"Failed to read YAML: {path}", sys) from e
+        raise MyException(f"Failed to read YAML: {path}", sys) from e
 
 
 def write_yaml(path: str, data: dict):
@@ -53,6 +53,7 @@ def load_object(path: str) -> Any:
 
 
 # ── Dataset helpers ───────────────────────────────────────────────────────────
+
 
 def load_dataset(path: str) -> pd.DataFrame:
     """Load CSV or Excel into a DataFrame."""

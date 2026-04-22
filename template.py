@@ -4,7 +4,6 @@ from pathlib import Path
 project_name = "src"
 
 list_of_files = [
-
     # ── Core package init files ───────────────────────────────────────────────
     f"{project_name}/__init__.py",
     f"{project_name}/components/__init__.py",
@@ -34,41 +33,32 @@ list_of_files = [
     f"{project_name}/pipline/prediction_pipeline.py",
     f"{project_name}/utils/__init__.py",
     f"{project_name}/utils/main_utils.py",
-
     # ── Root-level project files ──────────────────────────────────────────────
     "app.py",
     "demo.py",
     "requirements.txt",
     "setup.py",
     "pyproject.toml",
-
     # ── Docker ────────────────────────────────────────────────────────────────
     "Dockerfile",
     ".dockerignore",
-
     # ── DVC pipeline definition ───────────────────────────────────────────────
     "dvc.yaml",
-
     # ── Config files ──────────────────────────────────────────────────────────
     "config/model.yaml",
     "config/schema.yaml",
-
     # ── GitHub Actions CI/CD ──────────────────────────────────────────────────
     ".github/workflows/ci_cd.yml",
-
     # ── Tests ─────────────────────────────────────────────────────────────────
     "tests/__init__.py",
     "tests/test_pipeline.py",
-
     # ── Notebooks (for EDA / experimentation) ─────────────────────────────────
     "notebooks/.gitkeep",
-
     # ── Artifact output directories (kept empty in git) ───────────────────────
     "artifacts/raw_data/.gitkeep",
     "artifacts/processed_data/.gitkeep",
     "artifacts/models/.gitkeep",
     "artifacts/reports/.gitkeep",
-
     # ── Git / project meta ────────────────────────────────────────────────────
     ".gitignore",
     "README.md",

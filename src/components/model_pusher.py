@@ -1,5 +1,4 @@
 import sys
-from pathlib import Path
 
 from src.entity.artifact_entity import (
     DataTransformationArtifact,
@@ -35,7 +34,7 @@ class ModelPusher:
                 model=model,
                 problem_type=trainer_artifact.problem_type,
                 model_name=trainer_artifact.best_model_name,
-            )  
+            )
             estimator.save(self.final_model_path)
 
             logger.info(f"Production model saved to: {self.final_model_path}")

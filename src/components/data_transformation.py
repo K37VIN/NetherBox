@@ -6,23 +6,21 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 
-from src.entity.artifact_entity import DataIngestionArtifact,DataTransformationArtifact
+from src.entity.artifact_entity import DataIngestionArtifact, DataTransformationArtifact
 from src.entity.config_entity import DataTransformationConfig
 from src.exception import MyException
 from src.logger import logger
 from src.utils.main_utils import ensure_dir, save_object
 
-
 HIGH_CARDINALITY_THRESHOLD = 15
 
+
 class DataTransformation:
-     
     def __init__(self, config: DataTransformationConfig):
         self.config = config
         self.label_encoder = None
 
-
-    def _split_columns(self,df:pd.DataFrame,target_col: str):
+    def _split_columns(self, df: pd.DataFrame, target_col: str):
         feature_df = df.drop(columns=[target_col])
         num_cols = feature_df.select_dtypes(include=["number"]).columns.tolist()
         cat_cols = feature_df.select_dtypes(exclude=["number"]).columns.tolist()
@@ -31,21 +29,28 @@ class DataTransformation:
         cat_cols = [c for c in cat_cols if feature_df[c].nunique() > 1]
 
         return num_cols, cat_cols
-    
-    def _build_preprocessor(self,num_cols: list,cat_cols: list) -> ColumnTransformer:
-        numeric_pipeline = Pipeline([
-            ("imputer",SimpleImputer(strategy="median")),
-            ("scaler",StandardScaler()),
-        ])
-        
-        categorical_pipeline = Pipeline([
-           ("imputer", SimpleImputer(strategy="most_frequent")), # <--- Added comma
-           ("encoder", OneHotEncoder(
-            handle_unknown="ignore",
-            sparse_output=False,
-            max_categories=HIGH_CARDINALITY_THRESHOLD,
-         )),
-      ])
+
+    def _build_preprocessor(self, num_cols: list, cat_cols: list) -> ColumnTransformer:
+        numeric_pipeline = Pipeline(
+            [
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler()),
+            ]
+        )
+
+        categorical_pipeline = Pipeline(
+            [
+                ("imputer", SimpleImputer(strategy="most_frequent")),  # <--- Added comma
+                (
+                    "encoder",
+                    OneHotEncoder(
+                        handle_unknown="ignore",
+                        sparse_output=False,
+                        max_categories=HIGH_CARDINALITY_THRESHOLD,
+                    ),
+                ),
+            ]
+        )
 
         transformers = []
         if num_cols:
@@ -64,6 +69,7 @@ class DataTransformation:
             logger.info(f"Target label-encoded. Classes: {list(le.classes_)}")
             return y_train_enc, y_test_enc
         return y_train.values, y_test.values
+
     def initiate(self, ingestion_artifact: DataIngestionArtifact) -> DataTransformationArtifact:
         try:
             logger.info("=== Data Transformation started ===")
@@ -102,9 +108,7 @@ class DataTransformation:
 
             save_object(self.config.preprocessor_file_path, preprocessor)
 
-            logger.info(
-                f"Transformed shapes — train: {X_train_t.shape}, test: {X_test_t.shape}"
-            )
+            logger.info(f"Transformed shapes — train: {X_train_t.shape}, test: {X_test_t.shape}")
             logger.info("=== Data Transformation complete ===")
 
             return DataTransformationArtifact(

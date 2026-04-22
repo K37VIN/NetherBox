@@ -1,13 +1,10 @@
-import json
 import os
-import shutil
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 
 from src.logger import logger
 from src.pipline.prediction_pipeline import PredictionPipeline
@@ -32,6 +29,7 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 
 
 # ── Page routes ────────────────────────────────────────────────────────────────
+
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index.html", response_class=HTMLResponse)
@@ -61,6 +59,7 @@ async def app_page():
 
 
 # ── API routes ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 def health():
@@ -111,15 +110,12 @@ async def train(request: Request):
     problem_type = body.get("problem_type", None)
 
     if not dataset_path or not target_column:
-        raise HTTPException(
-            status_code=400,
-            detail="dataset_path and target_column are required"
-        )
+        raise HTTPException(status_code=400, detail="dataset_path and target_column are required")
 
     if not os.path.exists(dataset_path):
         raise HTTPException(
             status_code=404,
-            detail=f"File not found: {dataset_path}. Upload via /upload-dataset first."
+            detail=f"File not found: {dataset_path}. Upload via /upload-dataset first.",
         )
 
     try:
@@ -169,10 +165,7 @@ def metrics():
     """Return the latest training run metrics."""
     metrics_path = "artifacts/reports/metrics.json"
     if not os.path.exists(metrics_path):
-        raise HTTPException(
-            status_code=404,
-            detail="No metrics found. Run /train first."
-        )
+        raise HTTPException(status_code=404, detail="No metrics found. Run /train first.")
     return load_json(metrics_path)
 
 
@@ -181,10 +174,7 @@ def download_model():
     """Download the trained AutoML estimator .pkl file."""
     model_path = "artifacts/models/automl_estimator.pkl"
     if not os.path.exists(model_path):
-        raise HTTPException(
-            status_code=404,
-            detail="No trained model found. Run /train first."
-        )
+        raise HTTPException(status_code=404, detail="No trained model found. Run /train first.")
     return FileResponse(
         path=model_path,
         media_type="application/octet-stream",
@@ -195,6 +185,7 @@ def download_model():
 # ── Entry point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+
     # Hugging Face Spaces requires port 7860
     # Locally defaults to 8000 unless PORT env var is set
     port = int(os.getenv("PORT", 8000))

@@ -33,17 +33,13 @@ class ModelTrainerConfig:
 @dataclass
 class ModelEvaluationConfig:
     metrics_file_path: str
-    mlflow_uri: str = "sqlite:///automl.db" 
+    mlflow_uri: str = "sqlite:///automl.db"
     experiment_name: str = "AutoML_Experiment"
-    metadata_db_path: str = "automl.db" 
+    metadata_db_path: str = "automl.db"
+
 
 @dataclass
 class TrainingPipelineConfig:
     dataset_path: str
     target_column: str
-    problem_type: Optional[str] = None  
-
-    
-
-
-
+    problem_type: Optional[str] = None

@@ -6,9 +6,7 @@ from sklearn.model_selection import train_test_split
 from src.constants import (
     CLASSIFICATION,
     CLASSIFICATION_UNIQUE_THRESHOLD,
-    RANDOM_STATE,
     REGRESSION,
-    TEST_SIZE,
 )
 from src.entity.artifact_entity import DataIngestionArtifact
 from src.entity.config_entity import DataIngestionConfig
@@ -20,8 +18,6 @@ from src.utils.main_utils import ensure_dir, load_dataset
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
         self.config = config
-
-    
 
     def detect_problem_type(self, y: pd.Series, user_hint: str = None) -> str:
         """
@@ -45,14 +41,12 @@ class DataIngestion:
             )
             return CLASSIFICATION
 
-        logger.info(
-            f"Target has {n_unique} unique values and is numeric → regression"
-        )
+        logger.info(f"Target has {n_unique} unique values and is numeric → regression")
         return REGRESSION
 
-    
-
-    def initiate(self, dataset_path: str, target_column: str, problem_type_hint: str = None) -> DataIngestionArtifact:
+    def initiate(
+        self, dataset_path: str, target_column: str, problem_type_hint: str = None
+    ) -> DataIngestionArtifact:
         try:
             logger.info("=== Data Ingestion started ===")
 
@@ -67,7 +61,6 @@ class DataIngestion:
             y = df[target_column]
             problem_type = self.detect_problem_type(y, problem_type_hint)
 
-            
             train_df, test_df = train_test_split(
                 df,
                 test_size=self.config.test_size,
@@ -80,8 +73,7 @@ class DataIngestion:
             test_df.to_csv(self.config.test_file_path, index=False)
 
             logger.info(
-                f"Train: {train_df.shape}, Test: {test_df.shape} "
-                f"| Problem type: {problem_type}"
+                f"Train: {train_df.shape}, Test: {test_df.shape} | Problem type: {problem_type}"
             )
             logger.info("=== Data Ingestion complete ===")
 
@@ -95,4 +87,4 @@ class DataIngestion:
             )
 
         except Exception as e:
-            raise MyException(str(e), sys) from e  
+            raise MyException(str(e), sys) from e
