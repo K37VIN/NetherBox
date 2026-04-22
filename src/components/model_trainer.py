@@ -25,6 +25,7 @@ from src.exception import MyException
 from src.logger import logger
 from src.utils.main_utils import ensure_dir, save_object
 
+
 CLASSIFICATION_MODELS = {
     "LogisticRegression": LogisticRegression(max_iter=500, random_state=RANDOM_STATE),
     "DecisionTree": DecisionTreeClassifier(random_state=RANDOM_STATE),
@@ -47,11 +48,6 @@ class ModelTrainer:
         self.config = config
 
     def _load_model_registry(self, problem_type: str) -> dict:
-        """
-        Try to load a custom model list from model.yaml.
-        Falls back to defaults if file is missing or empty.
-        """
-
         try:
             with open(self.config.model_config_path) as f:
                 cfg = yaml.safe_load(f) or {}
@@ -61,13 +57,38 @@ class ModelTrainer:
                 return custom
         except FileNotFoundError:
             pass
+
         models = CLASSIFICATION_MODELS if problem_type == CLASSIFICATION else REGRESSION_MODELS
         logger.info(f"Using default {problem_type} model registry ({len(models)} models)")
         return models
 
+    
     def _cv_score(self, model, X: np.ndarray, y: np.ndarray, problem_type: str) -> float:
         scoring = "f1_weighted" if problem_type == CLASSIFICATION else "r2"
-        scores = cross_val_score(model, X, y, cv=5, scoring=scoring, n_jobs=-1)
+
+        n_samples = len(y)
+
+        if problem_type == CLASSIFICATION:
+            # Count samples per class
+            unique, counts = np.unique(y, return_counts=True)
+            min_class_count = counts.min()
+
+            # CV cannot exceed smallest class size
+            max_cv = min_class_count
+        else:
+            max_cv = n_samples
+
+        # Use at most 5 folds, but adapt if dataset is small
+        cv = min(5, max_cv)
+
+        # Safety fallback
+        if cv < 2:
+            logger.warning("Very small dataset — using cv=2 fallback")
+            cv = 2
+
+        logger.info(f"Using cv={cv} for cross-validation")
+
+        scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, n_jobs=-1)
         return float(scores.mean())
 
     def initiate(
